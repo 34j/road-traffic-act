@@ -1,0 +1,24 @@
+# Changes here will be overwritten by Copier
+_commit: 984a3ed
+_src_path: gh:34j/pypackage-template
+add_me_as_contributor: true
+cli_name: road-traffic-act
+copyright_year: '2025'
+documentation: true
+email: 34j.95a2p@simplelogin.com
+full_name: 34j
+github_app_installation_ids: ''
+github_username: 34j
+has_cli: true
+initial_commit: true
+is_django_package: false
+open_source_license: MIT
+open_with_editor: true
+package_name: road_traffic_act
+project_name: Road Traffic Act
+project_short_description: 運転免許の学科試験対策（道路交通法）
+project_slug: road-traffic-act
+run_uv_sync: true
+setup_github: true
+setup_pre_commit: true
+
