@@ -19,6 +19,7 @@ LAW_ID = {
 }
 
 
+@cache
 def _prepare() -> None:
     from subprocess import run
 
@@ -33,7 +34,7 @@ def _prepare() -> None:
 
 
 @cache
-def _get_content(id: str) -> str:
+def _get_content(id: str, /) -> str:
     _prepare()
     directory = CACHE_FOLDER / "elaws-history" / "all_xml" / id[:3]
     candidates = list(directory.rglob(f"{id}_*.xml"))
@@ -42,6 +43,41 @@ def _get_content(id: str) -> str:
     return candidates[-1].read_text(encoding="utf-8")
 
 
-def get_xml(id: str) -> etree._Element:
+def get_xml(id: str, /) -> etree._Element:
     conotrent = _get_content(id)
     return etree.fromstring(conotrent.encode("utf-8"))
+
+
+def format(element: etree._Element, /) -> str:
+    """Format any XML element as a string
+
+    - Convert <Ruby>base<Rt>rt</Rt></Ruby> to base(rt)
+    - Only use the text content of <Sentence>, <ItemTitle>, <ParagraphNum>, <ArticleCaption>, <ArticleTitle>, <SupplNote>
+    """
+    for ruby in element.findall(".//Ruby"):
+        base = ruby.find("Base")
+        if base is not None:
+            base_text = base.text or ""
+            rt = ruby.find("Rt")
+            if rt is not None:
+                rt_text = rt.text or ""
+                ruby_text = f"{base_text}({rt_text})"
+                ruby.getparent().text = (ruby.getparent().text or "") + ruby_text
+                ruby.getparent().remove(ruby)
+    text = ""
+    for sub_element in element.iter():
+        if sub_element.tag in {
+            "Sentence",
+            "ItemTitle",
+            "ParagraphNum",
+            "ArticleCaption",
+            "ArticleTitle",
+            "SupplNote",
+        }:
+            if sub_element.text:
+                text += sub_element.text.strip()
+                if sub_element.tag in {"ItemTitle", "ParagraphNum", "ArticleTitle"}:
+                    text += " "
+                if sub_element.tag in {"Sentence", "ArticleCaption", "SupplNote"}:
+                    text += "\n"
+    return text.strip()
